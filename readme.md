@@ -1,6 +1,8 @@
 <h1>Style Design Platform</h1>
 <br>
-SDP - is a language to simplify CSS syntax for working with styles
+SDP - is a language to simplify CSS syntax for working with styles. Download/Embed: https://cdn.yurba.me/static/sdp/1.0/main.js
+<br>
+Download the <a href="https://marketplace.visualstudio.com/items?itemName=ClarityLabWDS.sdp-syntax">VSCode Extension</a>
 <br>
 With SDP, you can easily learn how to write code quickly by using handy code highlighting and snippets to help you navigate and simplify your coding. <a href="https://dev.yurba.me/cl/sdp/docs">More...</a>
 <br>
