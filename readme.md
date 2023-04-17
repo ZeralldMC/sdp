@@ -37,11 +37,15 @@ Import CSS file: <code>@css("...")</code>
 <br>
 Import SDP file: <code>@import("...")</code> or <code>@connect("...")</code>
 <br>
+Or with link tag: <code>&lt;link rel="sdp" href="yourfile.sdp"&gt;</code>
+<br>
 - Scripting
 <br>
 <code>_script(ADD: meta-adaptive)</code> - Adds a meta tag to adapt the page to other devices
 <br><br>
 <h4 style="font-weight: bold">Lets show!</h4>
+Webtest: https://dev.yurba.me/cl/sdp/webtest/
+<br><br>
 <span style="font-weight: bold">Thats a default CSS syntax:</span>
 <br><br>
 <img  style="border-radius: 5px; width: 500px;" src="https://user-images.githubusercontent.com/115047953/229337556-b3691cec-ff51-4e57-85b8-0182f90d846e.png">
