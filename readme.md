@@ -2,7 +2,7 @@
 <br>
 SDP - is a language to simplify CSS syntax for working with styles. SDP not only simplifies the syntax, it also makes your code easier: you can create templates (_templates(...)) or variables (_vars(...)) and make your code technically easier. 
 <br><br>
-Download or embed the <a href="https://cdn.yurba.me/static/sdp/1.0/main.js">JS File</a>
+Download or embed the <a href="https://cdn.yurba.me/static/sdp/1.1/main.js">JS File</a>
 <br>
 Download the <a href="https://marketplace.visualstudio.com/items?itemName=ClarityLabWDS.sdp-syntax">VSCode Extension</a>
 <br><br>
