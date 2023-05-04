@@ -3,6 +3,10 @@ sdp.msg = false;
 sdp.visible_vars = true;
 sdp.version = "1.0";
 
+// 1.1
+sdp.errors = true;
+sdp.warns = true;
+
 function sdp_tag() {
     var doc = document.querySelector("*");
     var elements = document.querySelector("*").getElementsByTagName("sdp").length
@@ -55,6 +59,13 @@ sdp.values_convert = function(text) {
             .replaceAll(/=display-col\b/g, "display: flex;\nflex-direction: column;")
             .replaceAll(/=display-row\b/g, "display: flex;\nflex-direction: row;")
 
+            .replaceAll(/--default-bs\b/g, "box-shadow: #00000050 0px 0px 10px 0px")
+            .replaceAll(/--tiny-bs\b/g, "box-shadow: #00000050 0px 0px 5px 0px")
+            .replaceAll(/--big-bs\b/g, "box-shadow: #00000060 0px 0px 15px 0px")
+            .replaceAll(/--default-ts\b/g, "text-shadow: #00000050 0px 0px 10px")
+            .replaceAll(/--tiny-ts\b/g, "text-shadow: #00000050 0px 0px 5px")
+            .replaceAll(/--big-ts\b/g, "text-shadow: #00000060 0px 0px 15px")
+
             .replaceAll(/\bt-a\b/g, "text-align")
             .replaceAll(/\bt-s\b/g, "text-shadow")
             .replaceAll(/\bt-d\b/g, "text-decoration")
@@ -63,6 +74,7 @@ sdp.values_convert = function(text) {
             .replaceAll(/\binner\b/g, "content")
             .replaceAll(/\bl-h\b/g, "line-height")
             .replaceAll(/\btrans\b/g, "transition")
+            .replaceAll(/\anim\b/g, "animation")
 }
 sdp.special_chars = function(htmlStr) {
     return htmlStr.replace(/&/g, "&amp;")
@@ -135,7 +147,6 @@ function sdp_animation() {
     }
     
 }
-sdp_animation()
 
 function sdp_font_family_selector() {
     var tag = document.querySelector("sdp");
@@ -153,7 +164,7 @@ sdp_font_family_selector()
 function sdp_script() {
     var tag = document.querySelector("sdp");
     if(tag.textContent.includes("_script")) {
-        var inScript = sdp.delete_spaces(tag.textContent.split("_script(")[1].split(")")[0]);
+        var inScript = tag.textContent.split("_script(")[1].split(")")[0];
         var script = inScript.split(";")
         for(let i = 0; i < script.length - 1; i++) {
             var cond = script[i].split(":")[0]
@@ -161,6 +172,14 @@ function sdp_script() {
             var id = value.split("-")[0];
             var target = value.split("-")[1];
             var doc = document.querySelector("*");
+
+            value = value.replaceAll("{version}", sdp.version)
+            .replaceAll("{version_underline}", sdp.version.replaceAll(".", "_"))
+            .replaceAll("{version_dephys}", sdp.version.replaceAll(".", "-"))
+            .replaceAll("{url}", window.location.href)
+            .replaceAll("{domain}", window.location.href.replace("http://", "").replace("http://", "").split("/")[0])
+            .replaceAll("{url_path}", window.location.href.replace("http://", "").replace("http://", "").split("/")[1])
+
             if(cond == "ADD") {
                 if(id == "tag") {
                     var createdTag = document.createElement(target)
@@ -290,6 +309,108 @@ function sdp_script() {
                     element.removeAttribute(value2.split("=>")[0])
                 }
             }
+            const regexForLink = /LINK\[[^\]]*\]/;
+            if(regexForLink.test(cond)) {
+                var linkType = cond.split("LINK[")[1].split("]")[0]
+                var link = document.createElement("link")
+                var userLink = '';
+                if(value.includes("USE-HTTPS")) {
+                    var isHttps = value.split(",")[1].split("USE-HTTPS")[1].split("=")[1];
+                    userLink = "https://" + value.split(",")[0];
+                    if(isHttps == "false") {
+                        userLink = "http://" + value.split(",")[0]; 
+                    }
+                }
+                else {
+                    userLink = "http://" + value;
+                }
+                if(linkType == "CSS") {
+                    link.href = userLink;
+                    link.rel = "stylesheet";
+                }
+                if(linkType == "JS") {
+                    link = document.createElement("script");
+                    link.src = userLink;
+                    link.type = "text/javascript";
+                }
+                if(linkType == "SDP") {
+                    link.href = userLink;
+                    link.rel = "sdp";
+                }
+                document.body.append(link)
+            }
+        }
+        const regexForFile = /FILE\[[^\]]*\]/;
+        if(regexForFile.test(cond)) {
+            var linkType = cond.split("FILE[")[1].split("]")[0]
+            var link = document.createElement("link")
+
+            if(linkType == "CSS") {
+                link.href = value;
+                link.rel = "stylesheet";
+            }
+            if(linkType == "JS") {
+                link = document.createElement("script");
+                link.src = value;
+                link.type = "text/javascript";
+            }
+            if(linkType == "SDP") {
+                link.href = value;
+                link.rel = "sdp";
+            }
+            document.body.append(link)
+        }
+        const regexForSay = /SAY\[[^\]]*\]/;
+        if(regexForSay.test(cond)) {
+            var sayType = cond.split("SAY[")[1].split("]")[0]
+            if(sayType == "") {
+                console.log(value)
+            }
+            if(sayType == "DEFAULT") {
+                console.log(value)
+            }
+            if(sayType == "WARN") {
+                console.warn(value)
+            }
+            if(sayType == "ERR") {
+                console.error(value)
+            }
+        }
+        if(cond == "INCLUDE-HTML") {
+            var includeTag = value.split(",")[0]
+            var includeFile = value.split(",")[1];
+            if(includeTag == "none" && includeTag == "undefined") {
+                var doc = document.createElement("sdp-include");
+                document.body.append(doc)
+
+                fetch(includeFile)
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector('sdp-include').innerHTML += html;
+                    for(let i = 0; i < document.querySelectorAll("sdp").length; i++) {
+                        var sdpTag = document.querySelectorAll("sdp")[i];
+                        sdpTag.setAttribute("hidden", true)
+                    }
+                });
+            }
+            else {
+                fetch(includeFile)
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector(includeTag).innerHTML += html;
+                    for(let i = 0; i < document.querySelectorAll("sdp").length; i++) {
+                        var sdpTag = document.querySelectorAll("sdp")[i];
+                        sdpTag.setAttribute("hidden", true)
+                    }
+                });
+            }
+        }
+        const regexForPage = /PAGE\[[^\]]*\]/;
+        if(regexForPage.test(cond)) {
+            var pageType = cond.split("PAGE[")[1].split("]")[0]
+            if(pageType == "TITLE") {
+                document.title = value;
+            }
         }
     }
 }
@@ -327,23 +448,28 @@ function sdp_import_css() {
 }
 
 function sdp_media() {
+    // Проверяем, что тег <sdp> и <style> существуют
     var tag = document.querySelector("sdp");
     var style_tag = document.querySelector("style");
+    if (!tag || !style_tag) {
+      return;
+    }
+  
     var tag_content = tag.textContent;
-
-    if(tag_content.includes("@media")) {
-        var media = "@media" + tag.textContent.split("@media")[1]
-        const match = media.match(/^@media\s+([^[\]]+)\s+\[\s*([\s\S]+?)\s*\]$/m);
-        if (match) {
-            const firstParams = match[1].trim();
-            const secondParams = match[2].trim();
-            style_tag.textContent = style_tag.textContent + "\n@media " + firstParams + "\n{\n " + sdp.values_convert(sdp.values_dot_convert(secondParams.replaceAll("$", ".").replaceAll("(", "{").replaceAll(")", "}"))) + "\n}\n"
-        } else {
-            console.error('Media query string does not match expected format');
-        }
+  
+    // Находим все совпадения @media в строке
+    var mediaMatches = tag_content.matchAll(/@media\s+([^[\]]+)\s+\[\s*([\s\S]+?)\s*\]/gm);
+    for (const match of mediaMatches) {
+      const firstParams = match[1].trim();
+      const secondParams = match[2].trim();
+  
+      // Заменяем символы $, ( и ) на ., { и } соответственно
+      var mediaStyles = secondParams.replaceAll("$", ".").replaceAll("(", "{").replaceAll(")", "}")
+  
+      // Добавляем новый @media стиль в тег <style>
+      style_tag.textContent = style_tag.textContent + "\n@media " + firstParams + "\n{\n " + sdp.values_convert(sdp.values_dot_convert(mediaStyles)) + "\n}\n"
     }
 }
-sdp_media()
 function sdp_templates() {
     var tag = document.querySelector("sdp");
     if(tag.textContent.includes("_templates")) {
@@ -606,4 +732,6 @@ sdp_rel().then(() => {
     sdp_imported.remove()
     sdp.apply()
     sdp_script()
+    sdp_animation()
+    sdp_media()
 });
